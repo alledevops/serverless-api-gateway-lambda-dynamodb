@@ -22,138 +22,7 @@ The project consists of three main components:
 ![High-Level Design](https://cdn.hashnode.com/res/hashnode/image/upload/v1690899236087/dd4f2db8-6930-4c67-819a-599a0db1e97e.png)
 
 ## Deployment and Infrastructure as Code (IaC)
-To implement the deployment of the project, we use **Infrastructure as Code (IaC)** principles with **AWS CloudFormation**. We define the necessary resources, such as the Lambda function, IAM role, and API Gateway, in a CloudFormation template. This ensures a consistent and reproducible infrastructure setup.
-
-```yml
-AWSTemplateFormatVersion: 2010-09-09
-Description: >-
-  CloudFormation template for Serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB
-
-# Parameters section to make the template customizable
-Parameters:
-  TableName:
-    Type: String
-    Description: Name of the DynamoDB table to create
-    Default: lambda-apigateway
-
-# Resources section where we define the AWS resources
-Resources:
-  # DynamoDBTable resource to create the DynamoDB table
-  DynamoDBTable:
-    Type: 'AWS::DynamoDB::Table'
-    Properties:
-      TableName: !Ref TableName
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-
-  # LambdaRole resource to create the IAM role for Lambda function
-  LambdaRole:
-    Type: 'AWS::IAM::Role'
-    Properties:
-      RoleName: lambda-apigateway-role
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - 'sts:AssumeRole'
-      Policies:
-        - PolicyName: LambdaDynamoDBPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'dynamodb:DeleteItem'
-                  - 'dynamodb:GetItem'
-                  - 'dynamodb:PutItem'
-                  - 'dynamodb:Query'
-                  - 'dynamodb:Scan'
-                  - 'dynamodb:UpdateItem'
-                Resource: '*'
-              - Effect: Allow
-                Action:
-                  - 'logs:CreateLogGroup'
-                  - 'logs:CreateLogStream'
-                  - 'logs:PutLogEvents'
-                Resource: '*'
-
-  # LambdaFunction resource to create the AWS Lambda function
-  LambdaFunction:
-    Type: 'AWS::Lambda::Function'
-    Properties:
-      FunctionName: LambdaFunctionOverHttps
-      Runtime: python3.7
-      Handler: index.lambda_handler
-      Role: !GetAtt LambdaRole.Arn
-      Code:
-        ZipFile: |
-          # Sample Python Code for the Lambda Function
-          # ... (Python code is provided in the template)
-
-  # ApiGateway resource to create the Amazon API Gateway
-  ApiGateway:
-    Type: 'AWS::ApiGateway::RestApi'
-    Properties:
-      Name: DynamoDBOperations
-
-  # ApiResource resource to create the resource in the API Gateway
-  ApiResource:
-    Type: 'AWS::ApiGateway::Resource'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      ParentId: !GetAtt ApiGateway.RootResourceId
-      PathPart: DynamoDBManager
-
-  # ApiMethod resource to create the method (POST) for the API Gateway
-  ApiMethod:
-    Type: 'AWS::ApiGateway::Method'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      ResourceId: !Ref ApiResource
-      HttpMethod: POST
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub >-
-          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations
-
-  # ApiDeployment resource to deploy the API Gateway
-  ApiDeployment:
-    Type: 'AWS::ApiGateway::Deployment'
-    DependsOn:
-      - "ApiMethod"
-    Properties:
-      RestApiId: !Ref ApiGateway
-
-  # ApiStage resource to create the stage for the API Gateway
-  ApiStage:
-    Type: 'AWS::ApiGateway::Stage'
-    Properties:
-      RestApiId: !Ref ApiGateway
-      DeploymentId: !Ref ApiDeployment
-      StageName: Prod
-
-# Outputs section to provide information after stack creation
-Outputs:
-  # ApiEndpoint output to display the endpoint URL of the deployed API
-  ApiEndpoint:
-    Value: !Sub >-
-      https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/DynamoDBManager
-    Description: Endpoint URL of the deployed API
-
-```
+To implement the deployment of the project, we use **Infrastructure as Code (IaC)** principles with **AWS CloudFormation**. The CloudFormation template is available in the `infra` folder of the project directory, and it defines all the necessary resources, including the Lambda function, API Gateway, and DynamoDB table. You can customize the template to suit your specific requirements.
 
 ## Continuous Integration and Continuous Deployment (CI/CD)
 For continuous integration and deployment, we have decided not to set up a CI/CD pipeline for this version of the project. Instead, manual deployment to the selected environment is performed. This decision was made considering the simplicity of the project and the scope of the portfolio.
@@ -163,6 +32,12 @@ To monitor the application and infrastructure health, we use AWS CloudWatch. Clo
 
 ## Security and Compliance
 Security is a top priority in our project. We implement fine-grained access control using IAM roles and policies. Additionally, we encrypt sensitive data at rest and in transit. Our infrastructure follows AWS security best practices to ensure compliance with industry standards.
+
+## Implementation Guide
+
+To implement the project step by step using the AWS Management Console, you can follow this comprehensive guide in our blog post: https://alledevops.com/scalable-serverless-api-amazon-api-gateway-aws-lambda
+
+The guide provides detailed instructions on how to set up the serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB. It covers everything from creating the necessary AWS resources to deploying the CloudFormation stack and testing the API endpoints.
 
 ## Lessons Learned and Challenges
 During the development of the project, we encountered a few challenges related to the AWS API Gateway setup. Specifically, we faced issues with sending POST requests using Postman, receiving "missing authentication token" and "internal server error" messages. After careful investigation, we found that the API Gateway required a valid API key or authentication settings to accept requests. Once we added the necessary authentication settings, the issues were resolved.
