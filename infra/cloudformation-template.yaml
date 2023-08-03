@@ -1,0 +1,128 @@
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  CloudFormation template for Serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB
+
+# Parameters section to make the template customizable
+Parameters:
+  TableName:
+    Type: String
+    Description: Name of the DynamoDB table to create
+    Default: lambda-apigateway
+
+# Resources section where we define the AWS resources
+Resources:
+  # DynamoDBTable resource to create the DynamoDB table
+  DynamoDBTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Ref TableName
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  # LambdaRole resource to create the IAM role for Lambda function
+  LambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: lambda-apigateway-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: LambdaDynamoDBPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:DeleteItem'
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:Query'
+                  - 'dynamodb:Scan'
+                  - 'dynamodb:UpdateItem'
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'
+
+  # LambdaFunction resource to create the AWS Lambda function
+  LambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: LambdaFunctionOverHttps
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        ZipFile: |
+          # Sample Python Code for the Lambda Function
+          # ... (Python code is provided in the template)
+
+  # ApiGateway resource to create the Amazon API Gateway
+  ApiGateway:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: DynamoDBOperations
+
+  # ApiResource resource to create the resource in the API Gateway
+  ApiResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: DynamoDBManager
+
+  # ApiMethod resource to create the method (POST) for the API Gateway
+  ApiMethod:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref ApiResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub >-
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations
+
+  # ApiDeployment resource to deploy the API Gateway
+  ApiDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    DependsOn:
+      - "ApiMethod"
+    Properties:
+      RestApiId: !Ref ApiGateway
+
+  # ApiStage resource to create the stage for the API Gateway
+  ApiStage:
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      RestApiId: !Ref ApiGateway
+      DeploymentId: !Ref ApiDeployment
+      StageName: Prod
+
+# Outputs section to provide information after stack creation
+Outputs:
+  # ApiEndpoint output to display the endpoint URL of the deployed API
+  ApiEndpoint:
+    Value: !Sub >-
+      https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/DynamoDBManager
+    Description: Endpoint URL of the deployed API
