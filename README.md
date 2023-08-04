@@ -1,4 +1,7 @@
+
 # Building a Serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB
+
+![High-Level Design](./images/serverless-resized-small.jpg)
 
 ## Project Summary
 Our goal is to **create a powerful serverless API that interacts with DynamoDB to perform CRUD operations** and supports additional operations for testing. 
