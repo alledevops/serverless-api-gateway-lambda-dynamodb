@@ -30,11 +30,13 @@ To implement the deployment of the project, we use **Infrastructure as Code (IaC
 To monitor the application and *infrastructure health*, we use **AWS CloudWatch**. CloudWatch gathers and displays *performance metrics*, *logs*, and *events*. By analyzing these metrics and logs, we can identify potential issues and performance bottlenecks.
 
 ## Security and Compliance
-Security is a top priority in our project. We implement **fine-grained access control** using *IAM roles* and *policies*. Additionally, we encrypt sensitive data *at rest* and *in transit*. 
+We implement **fine-grained access control** using *IAM roles* and *policies*. Additionally, we encrypt sensitive data *at rest* and *in transit*. 
 
 ## Implementation Guide
 
 To implement the project step by step using the AWS Management Console, you can follow this **project design narrative** in my **blog website**: https://alledevops.com/scalable-serverless-api-amazon-api-gateway-aws-lambda
+
+![High-Level Design](./images/blog-sample-intro.JPG)
 
 The guide provides detailed instructions on *how to set up* the serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB. It covers everything from *creating* the necessary *AWS resources* to *deploying* the CloudFormation stack and *testing* the API endpoints.
 
