@@ -19,7 +19,7 @@ The API will be backed by an *AWS Lambda function*, which will handle incoming r
 The project consists of **three main components**:
 1. **Amazon API Gateway:** Serves as the frontend for the API, routing HTTP requests to the appropriate Lambda function.
 2. **AWS Lambda:** A Python 3.7 Lambda function acts as the backend, handling various operations and interacting with the DynamoDB table.
-3. **DynamoDB:** The NoSQL database service stores data, and we create a table with a primary key for efficient data retrieval.
+3. **DynamoDB:** The NoSQL database service stores data, and I create a table with a primary key for efficient data retrieval.
 
 ![High-Level Design](https://cdn.hashnode.com/res/hashnode/image/upload/v1690899236087/dd4f2db8-6930-4c67-819a-599a0db1e97e.png)
 
@@ -38,15 +38,15 @@ To implement the project step by step using the AWS Management Console, you can 
 
 ![High-Level Design](./images/blog-sample-intro.JPG)
 
-The guide provides detailed instructions on *how to set up* the serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB. It covers everything from *creating* the necessary *AWS resources* to *deploying* the CloudFormation stack and *testing* the API endpoints.
+The guide provides detailed instructions on *how to set up* the serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB. It covers everything from *creating* the necessary *AWS resources* to *testing* the API endpoints manually.
 
 ## Challenges
-During the development of the project, I encountered a few challenges related to the AWS API Gateway setup. Specifically, we faced **two main issues** with sending POST requests using Postman:
+During the development of the project, I encountered a few challenges related to the AWS API Gateway setup. Specifically, I faced **two main issues** with sending POST requests using Postman:
 
 - **"missing authentication token"**
-- **"internal server error"** messages. 
+- **"internal server error"** 
   
-After careful investigation, I found that the API Gateway required a valid API key or authentication settings to accept requests. Once we added the necessary authentication settings, the issues were resolved.
+After careful investigation, I found that the API Gateway required a valid API key or authentication settings to accept requests. Once I added the necessary authentication settings, the issues were resolved.
 
 ## Room for Growth
 While the current implementation of the serverless API project provides a solid foundation, there are several areas where the project can be further improved and expanded. Here are some ideas to enhance the project:
@@ -67,6 +67,8 @@ Add comprehensive integration tests to validate the entire system end-to-end. Us
 Building a serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB provides a scalable and cost-efficient solution for modern applications. By following this project's principles and best practices, developers can create robust and maintainable serverless applications that scale effortlessly with user demands.
 
 ## References
-- GitHub Repository: [link-to-github-repo]
-- AWS Documentation: [link-to-aws-docs]
-- Blog Post: [link-to-blog-post]
+- GitHub Repository: https://github.com/saha-rajdeep/serverless-lab
+- AWS Documentation: 
+  - https://repost.aws/knowledge-center/api-gateway-authentication-token-errors
+  - https://repost.aws/knowledge-center/api-gateway-internal-server-error
+- Blog Post: https://alledevops.com/scalable-serverless-api-amazon-api-gateway-aws-lambda
