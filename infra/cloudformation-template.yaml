@@ -1,18 +1,13 @@
-
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  CloudFormation template for Serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB
-
-# Parameters section to make the template customizable
+  CloudFormation template for Serverless API with Amazon API Gateway, AWS
+  Lambda, and DynamoDB
 Parameters:
   TableName:
     Type: String
     Description: Name of the DynamoDB table to create
     Default: lambda-apigateway
-
-# Resources section where we define the AWS resources
 Resources:
-  # DynamoDBTable resource to create the DynamoDB table
   DynamoDBTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
@@ -26,8 +21,6 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
-
-  # LambdaRole resource to create the IAM role for Lambda function
   LambdaRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -61,8 +54,6 @@ Resources:
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
                 Resource: '*'
-
-  # LambdaFunction resource to create the AWS Lambda function
   LambdaFunction:
     Type: 'AWS::Lambda::Function'
     Properties:
@@ -72,24 +63,83 @@ Resources:
       Role: !GetAtt LambdaRole.Arn
       Code:
         ZipFile: |
-          # Sample Python Code for the Lambda Function
-          # ... (Python code is provided in the template)
 
-  # ApiGateway resource to create the Amazon API Gateway
+          from __future__ import print_function
+
+          import boto3
+          import json
+
+          print('Loading function')
+
+
+          def lambda_handler(event, context):
+              '''Provide an event that contains the following keys:
+                - operation: one of the operations in the operations dict below
+                - tableName: required for operations that interact with DynamoDB
+                - payload: a parameter to pass to the operation being performed
+              '''
+
+              operation = event['operation']
+
+              if 'tableName' in event:
+                  dynamo = boto3.resource('dynamodb').Table(event['tableName'])
+
+              operations = {
+                  'create': lambda x: dynamo.put_item(**x),
+                  'read': lambda x: dynamo.get_item(**x),
+                  'update': lambda x: dynamo.update_item(**x),
+                  'delete': lambda x: dynamo.delete_item(**x),
+                  'list': lambda x: dynamo.scan(**x),
+                  'echo': lambda x: x,
+                  'ping': lambda x: 'pong'
+              }
+
+              if operation in operations:
+                  return operations[operation](event.get('payload'))
+              else:
+                  raise ValueError('Unrecognized operation "{}"'.format(operation))
+  ConfigLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    DependsOn:
+      - ApiGateway
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref LambdaFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub >-
+        arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/POST/DynamoDBManager
+  ApiGatewayExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: LambdaInvokePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'lambda:InvokeFunction'
+                Resource: !GetAtt LambdaFunction.Arn
   ApiGateway:
     Type: 'AWS::ApiGateway::RestApi'
     Properties:
       Name: DynamoDBOperations
-
-  # ApiResource resource to create the resource in the API Gateway
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
   ApiResource:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
       RestApiId: !Ref ApiGateway
       ParentId: !GetAtt ApiGateway.RootResourceId
       PathPart: DynamoDBManager
-
-  # ApiMethod resource to create the method (POST) for the API Gateway
   ApiMethod:
     Type: 'AWS::ApiGateway::Method'
     Properties:
@@ -98,30 +148,32 @@ Resources:
       HttpMethod: POST
       AuthorizationType: NONE
       Integration:
-        Type: AWS_PROXY
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ''
+        Credentials: !GetAtt ApiGatewayExecutionRole.Arn
+        Type: AWS
         IntegrationHttpMethod: POST
         Uri: !Sub >-
           arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations
-
-  # ApiDeployment resource to deploy the API Gateway
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: Empty
   ApiDeployment:
     Type: 'AWS::ApiGateway::Deployment'
     DependsOn:
-      - "ApiMethod"
+      - ApiMethod
     Properties:
       RestApiId: !Ref ApiGateway
-
-  # ApiStage resource to create the stage for the API Gateway
   ApiStage:
     Type: 'AWS::ApiGateway::Stage'
     Properties:
       RestApiId: !Ref ApiGateway
       DeploymentId: !Ref ApiDeployment
       StageName: Prod
-
-# Outputs section to provide information after stack creation
 Outputs:
-  # ApiEndpoint output to display the endpoint URL of the deployed API
   ApiEndpoint:
     Value: !Sub >-
       https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/DynamoDBManager
