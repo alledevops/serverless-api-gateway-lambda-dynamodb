@@ -26,11 +26,11 @@ The project consists of **three main components**:
 ## Deployment and Infrastructure as Code (IaC)
 To implement the deployment of the project, we use **Infrastructure as Code (IaC)** principles with **AWS CloudFormation**. The CloudFormation template is available in the `infra` folder of the project directory, and it defines all the necessary resources, including the Lambda function, API Gateway, and DynamoDB table. You can customize the template to suit your specific requirements.
 
-The provided one-click deployment URL simplifies the process by enabling you to deploy the complete application stack effortlessly with just a single click:
+The provided one-click deployment URL simplifies the process by enabling you to *deploy the complete application stack effortlessly with just a single click*:
 
 [One-Click Deployment](https://us-east-1.console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateUrl=https://serverless-api-gateway-lambda-dynamodb.s3.amazonaws.com/cloudformation-template.yaml&stackName=serverless-api-gateway-lambda-dynamodb)
 
-Upon successful stack creation, the Endpoint URL of the deployed API becomes accessible via the "Outputs" tab within the CloudFormation console. This facilitates the testing of the serverless API. Furthermore, reference to sample payloads can be located within the design narrative blog post (See Implementation Guide).
+Upon successful stack creation, the **Endpoint URL of the deployed API** becomes accessible via the **"Outputs"** tab within the **CloudFormation console**. This facilitates the testing of the serverless API. Furthermore, reference to **sample payloads** can be located within the design narrative blog post (See Implementation Guide).
 
 ## Monitoring and Alerting
 To monitor the application and *infrastructure health*, we use **AWS CloudWatch**. CloudWatch gathers and displays *performance metrics*, *logs*, and *events*. By analyzing these metrics and logs, we can identify potential issues and performance bottlenecks.
@@ -46,13 +46,23 @@ To implement the project step by step using the AWS Management Console, you can 
 
 The guide provides detailed instructions on *how to set up* the serverless API with Amazon API Gateway, AWS Lambda, and DynamoDB. It covers everything from *creating* the necessary *AWS resources* to *testing* the API endpoints manually.
 
-## Challenges
-During the development of the project, I encountered a few challenges related to the AWS API Gateway setup. Specifically, I faced **two main issues** with sending POST requests using Postman:
+## Overcoming Challenges
 
-- **"missing authentication token"**
-- **"internal server error"** 
-  
-After careful investigation, I found that the API Gateway required a valid API key or authentication settings to accept requests. Once I added the necessary authentication settings, the issues were resolved.
+During the course of project development, several challenges arose, particularly in *configuring the AWS API Gateway*. Notably, **two main hurdles** were encountered when dealing with POST requests through tools like Postman:
+
+1. **"Missing Authentication Token"**: Establishing communication with the API Gateway led to recurring "missing authentication token" errors, prompting an in-depth investigation for resolution.
+
+2. **"Internal Server Error"**: The project encountered intermittent "internal server error" issues, which required thorough troubleshooting to uncover the root causes.
+
+After dedicated exploration, a key insight emerged: *API Gateway operation relied not only on the IAM role but also necessitated explicit lambda permissions within the resource policy*. This realization effectively addressed the **"missing authentication token"** challenge.
+
+Upon manual resource implementation through the console, the project exhibited smooth functionality. This included seamless data creation in the DynamoDB table and effortless retrieval using tools like Postman and curl.
+
+![Api Gateway Method Execution](./images/api-gateway-method-execution.JPG)
+
+However, *transitioning to automated deployment via a cloudformation template introduced complexity*. The deployment process encountered **stack rollback** instances. To address this, a comprehensive analysis of API Gateway console, Postman, and CloudWatch **logs** was conducted. The issue stemmed from inconsistencies in the **API Gateway method execution** configuration within the template. *The solution involved meticulous alignment of the cloudformation template with the prescribed structure*, a nuanced and time-intensive process.
+
+In conclusion, these challenges highlighted **the intricacies of setting up an effective API Gateway**. They underscored the importance of perseverance and deep comprehension to successfully navigate and conquer such hurdles.
 
 ## Room for Growth
 While the current implementation of the serverless API project provides a solid foundation, there are several areas where the project can be further improved and expanded. Here are some ideas to enhance the project:
