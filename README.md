@@ -26,9 +26,11 @@ The project consists of **three main components**:
 ## Deployment and Infrastructure as Code (IaC)
 To implement the deployment of the project, we use **Infrastructure as Code (IaC)** principles with **AWS CloudFormation**. The CloudFormation template is available in the `infra` folder of the project directory, and it defines all the necessary resources, including the Lambda function, API Gateway, and DynamoDB table. You can customize the template to suit your specific requirements.
 
-https://us-east-1.console.aws.amazon.com/cloudformation/home
-#/stacks/quickcreate
-?templateUrl=https://serverless-api-gateway-lambda-dynamodb.s3.amazonaws.com/cloudformation-template.yaml
+The provided one-click deployment URL simplifies the process by enabling you to deploy the complete application stack effortlessly with just a single click:
+
+[One-Click Deployment](https://us-east-1.console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateUrl=https://serverless-api-gateway-lambda-dynamodb.s3.amazonaws.com/cloudformation-template.yaml&stackName=serverless-api-gateway-lambda-dynamodb)
+
+Upon successful stack creation, the Endpoint URL of the deployed API becomes accessible via the "Outputs" tab within the CloudFormation console. This facilitates the testing of the serverless API. Furthermore, reference to sample payloads can be located within the design narrative blog post (See Implementation Guide).
 
 ## Monitoring and Alerting
 To monitor the application and *infrastructure health*, we use **AWS CloudWatch**. CloudWatch gathers and displays *performance metrics*, *logs*, and *events*. By analyzing these metrics and logs, we can identify potential issues and performance bottlenecks.
