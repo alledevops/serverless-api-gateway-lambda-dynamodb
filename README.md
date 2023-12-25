@@ -14,6 +14,8 @@ The API will be backed by an *AWS Lambda function*, which will handle incoming r
 - **AWS DynamoDB**
 - **AWS IAM**
 - **Postman**
+- **CloudFormation**
+- **Terraform**
 
 ## Project Architecture
 The project consists of **three main components**:
