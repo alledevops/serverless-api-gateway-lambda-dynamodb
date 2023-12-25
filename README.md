@@ -23,14 +23,25 @@ The project consists of **three main components**:
 
 ![High-Level Design](https://cdn.hashnode.com/res/hashnode/image/upload/v1690899236087/dd4f2db8-6930-4c67-819a-599a0db1e97e.png)
 
-## Deployment and Infrastructure as Code (IaC)
-To implement the deployment of the project, we use **Infrastructure as Code (IaC)** principles with **AWS CloudFormation**. The CloudFormation template is available in the `infra` folder of the project directory, and it defines all the necessary resources, including the Lambda function, API Gateway, and DynamoDB table. You can customize the template to suit your specific requirements.
 
-The provided one-click deployment URL simplifies the process by enabling you to *deploy the complete application stack effortlessly with just a single click*:
+## Deployment and Infrastructure as Code (IaC) 
+**_--UPDATED--_**
+
+This project now embraces a refined approach to deployment and Infrastructure as Code (IaC) by incorporating both **AWS CloudFormation** and **Terraform**.
+
+### AWS CloudFormation
+
+The AWS CloudFormation template is located in the `infra/cfn` folder. It defines all the necessary resources, including the Lambda function, API Gateway, and DynamoDB table. You can customize the template to suit your specific requirements.
+
+The provided one-click deployment URL simplifies the process, allowing you to deploy the complete application stack effortlessly with just a single click:
 
 [One-Click Deployment](https://us-east-1.console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateUrl=https://serverless-api-gateway-lambda-dynamodb.s3.amazonaws.com/cloudformation-template.yaml&stackName=serverless-api-gateway-lambda-dynamodb)
 
 Upon successful stack creation, the **Endpoint URL of the deployed API** becomes accessible via the **"Outputs"** tab within the **CloudFormation console**. This facilitates the testing of the serverless API. Furthermore, reference to **sample payloads** can be located within the design narrative blog post (See Implementation Guide).
+
+### Terraform
+
+The Terraform configurations are now organized in the `infra/terraform` folder. This provides an alternative IaC method for managing and provisioning infrastructure resources. You can explore and modify the Terraform configurations based on your specific needs.
 
 ## Monitoring and Alerting
 To monitor the application and *infrastructure health*, we use **AWS CloudWatch**. CloudWatch gathers and displays *performance metrics*, *logs*, and *events*. By analyzing these metrics and logs, we can identify potential issues and performance bottlenecks.
